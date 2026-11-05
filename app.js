@@ -124,11 +124,20 @@ function page(title, html) {
   ${nav.map(n => n.length === 2 ? `<div class="navhead">${L(n[0], n[1])}</div>` : `<a class="nav${active(n[0])}" href="${n[0]}">${icon(n[1])}${L(n[2], n[3])}</a>`).join('')}
   </nav><div class="demo-note">${icon('db')}<div><b>${L('Live SQL demo', 'লাইভ SQL ডেমো')}</b>${L('Data is saved in your browser.', 'ডেটা আপনার ব্রাউজারে সেভ থাকে।')}
   <button class="btn sm ghost" data-act="reset">${icon('reset')} ${L('Reset data', 'ডেটা রিসেট')}</button></div></div></aside>
-  <main><header class="top"><div><div class="crumb">WatchShop / ${e(plain)}</div><h1>${title}</h1></div><div class="tools">
+  <div class="scrim" data-act="menu"></div>
+  <main><header class="top"><button class="btn ghost icon-btn menu-btn" data-act="menu" aria-label="Menu">${icon('grid')}</button><div class="ttl"><div class="crumb">WatchShop / ${e(plain)}</div><h1>${title}</h1></div><div class="tools">
   <button class="btn ghost" id="langBtn">বাংলা</button><button class="btn ghost icon-btn" id="themeBtn">🌙</button>
   <div class="who"><span class="avatar">${e(u.full_name[0])}</span><div>${e(u.full_name)}<small>${e(u.role)}</small></div></div>
   <a class="btn ghost icon-btn" href="#/logout" title="Logout">${icon('out')}</a></div></header>
-  <div class="content">${flashMsg ? `<div class="flash ${flashMsg[1]}">${e(flashMsg[0])}</div>` : ''}${html}</div></main>`;
+  <div class="content">${flashMsg ? `<div class="flash ${flashMsg[1]}">${e(flashMsg[0])}</div>` : ''}${html}</div>
+  <nav class="tabbar">
+    <a href="#/" class="${active('#/')}">${icon('dash')}<span>${L('Home', 'হোম')}</span></a>
+    <a href="#/sales" class="${h.startsWith('#/sales') && h !== '#/sales/new' || h.startsWith('#/sale/') ? ' on' : ''}">${icon('sale')}<span>${L('Sales', 'বিক্রয়')}</span></a>
+    <a href="#/sales/new" class="fab" aria-label="New sale">${icon('plus')}</a>
+    <a href="#/crud/watch" class="${active('#/crud/watch')}">${icon('watch')}<span>${L('Watches', 'ঘড়ি')}</span></a>
+    <a href="#/reports" class="${active('#/reports')}">${icon('chart')}<span>${L('Reports', 'রিপোর্ট')}</span></a>
+  </nav></main>`;
+  document.body.classList.remove('nav-open');
   flashMsg = null;
   applyTheme(document.documentElement.dataset.theme); applyLang(); window.scrollTo(0, 0);
 }
@@ -317,6 +326,8 @@ function saleView(id) {
    <input name="refund" type="number" step="any" min="0" value="${it.unit_price * it.quantity}"><button class="btn sm danger">${L('Confirm', 'নিশ্চিত')}</button></form></details>`}</td></tr>`).join('')}</tbody>
   <tfoot><tr><td colspan="4" class="right">Discount</td><td>- ${tk(s.discount)}</td><td colspan="2"></td></tr><tr><td colspan="4" class="right"><b>Total</b></td><td><b>${tk(s.total_amount)}</b></td><td colspan="2"></td></tr>
   <tr><td colspan="4" class="right">Paid</td><td>${tk(s.paid)}</td><td colspan="2">${badge(s.payment_status)}</td></tr><tr><td colspan="4" class="right">Due</td><td><b>${tk(s.due)}</b></td><td colspan="2"></td></tr></tfoot></table>
+  <div class="inv-sum"><div><span>Discount</span><b>- ${tk(s.discount)}</b></div><div><span>Total</span><b>${tk(s.total_amount)}</b></div>
+  <div><span>Paid</span><b>${tk(s.paid)}</b></div><div class="due"><span>Due ${badge(s.payment_status)}</span><b>${tk(s.due)}</b></div></div>
   <p class="muted small">Salesperson: ${e(s.salesperson)}</p><button class="btn ghost noprint" onclick="print()">${icon('print')} ${L('Print', 'প্রিন্ট')}</button></div>
   <div class="grid2 noprint"><div class="card"><h3>${L('Payment History', 'পেমেন্ট হিস্ট্রি')}</h3><table><thead><tr><th>Date</th><th>Method</th><th>Amount</th></tr></thead><tbody>
   ${pays.map(p => `<tr><td>${fmtD(p.paid_at)}</td><td>${e(p.method)}</td><td>${tk(p.amount)}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">No payment yet</td></tr>'}</tbody></table></div>
@@ -514,6 +525,7 @@ document.addEventListener('click', async ev => {
     if (act === 'del') { if (!confirm('Delete?')) return; const [, , table, pk] = T[b.dataset.t]; tx(() => run(`DELETE FROM ${table} WHERE ${pk} = ?`, [b.dataset.id])); flash('Deleted.'); route(); }
     if (act === 'postatus') { tx(() => run("UPDATE purchase_order SET status = ? WHERE po_id = ? AND status = 'Pending'", [b.dataset.s, b.dataset.id]));
       flash(b.dataset.s === 'Received' ? 'Marked Received. Stock updated by trigger.' : 'Order cancelled.'); route(); }
+    if (act === 'menu') { document.body.classList.toggle('nav-open'); return; }
     if (act === 'sample') { const q = SAMPLES[+b.dataset.i][1]; sessionStorage.setItem('ws_sql', q); sqlPage(q); }
     if (act === 'reset') { if (!confirm('Reset all data to the original sample data?')) return; await freshDB(); flash('Demo data reset.'); route(); }
   } catch (x) { flash(niceErr(x), 'err'); route(); }

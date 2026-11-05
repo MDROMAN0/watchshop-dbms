@@ -229,3 +229,99 @@ tfoot td{border:none;padding:6px 12px}
 .sqlbox:focus{background:#0f0e0c}
 textarea{font:inherit}
 .demo-note>div{display:flex;flex-direction:column;align-items:flex-start}
+
+/* =================== MOBILE (≤ 900px) =================== */
+.menu-btn,.scrim,.tabbar{display:none}
+.ttl{min-width:0}
+@media (max-width:900px){
+  html,body{overflow-x:hidden}
+  body{display:block}
+  #app{display:block;min-height:100vh}
+  /* sidebar becomes a slide-in drawer */
+  .side{position:fixed!important;top:0;left:0;bottom:0;width:280px!important;height:100vh!important;z-index:60;transform:translateX(-105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 60px rgba(0,0,0,.5)}
+  .side nav{display:block!important}
+  .navhead{width:auto}
+  body.nav-open .side{transform:none}
+  .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:55;opacity:0;pointer-events:none;transition:opacity .25s}
+  body.nav-open .scrim{opacity:1;pointer-events:auto}
+  .menu-btn{display:inline-flex}
+  /* top bar */
+  .top{padding:10px 14px!important;gap:10px;flex-wrap:nowrap!important}
+  .top h1{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .crumb,.who>div{display:none}
+  .who{padding-left:8px;margin:0}
+  .tools{gap:6px} .tools .btn{padding:7px 9px;font-size:12.5px}
+  .avatar{width:32px;height:32px;border-radius:10px}
+  /* content */
+  .content{padding:14px 14px 96px!important;gap:14px}
+  .card{padding:16px;border-radius:16px}
+  .grid2,.grid2:has(> .form),.grid3{grid-template-columns:minmax(0,1fr)!important;gap:14px}
+  .span2{grid-column:auto}
+  .row.between{gap:10px}
+  .search{width:100%}
+  /* hero & kpis */
+  .hero{padding:20px;border-radius:20px;flex-direction:column;align-items:flex-start}
+  .hero h2{font-size:22px} .hero .stat{text-align:left;width:100%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .hero .stat small{width:100%} .hero .stat b{font-size:28px}
+  .hero::after{width:200px;height:200px;right:-80px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .kpi{padding:13px;gap:10px;flex-direction:column;align-items:flex-start}
+  .kpi i{width:38px;height:38px;border-radius:12px} .kpi i .ic{width:19px;height:19px}
+  .kpi b{font-size:18px}
+  /* best sellers: swipe row */
+  .strip{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:0 16px 6px}
+  .mini-card{flex:0 0 46%;scroll-snap-align:start}
+  /* product gallery: 2 per row */
+  .gwrap{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .pbody{padding:10px 11px 12px} .pbody h4{font-size:14px;margin-bottom:6px} .pprice b{font-size:16px}
+  .pprice .small{display:none} .pmeta{flex-wrap:wrap;gap:6px;font-size:11.5px}
+  .pcat,.pstock{font-size:10px!important;padding:3px 7px!important;top:8px} .pstock{left:8px} .pcat{right:8px}
+  /* every table scrolls sideways inside its card instead of breaking the page */
+  .card table:not(.items){display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  .card table:not(.items) td,.card table:not(.items) th{padding:10px}
+  .hb{grid-template-columns:90px 1fr 76px;gap:8px;font-size:12px}
+  .bars{height:160px;gap:4px} .bar em{font-size:9.5px}
+  /* sale / purchase item rows become stacked mini-cards */
+  table.items thead{display:none}
+  table.items,table.items tbody{display:block}
+  table.items tr{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--bg)}
+  table.items td{padding:0!important}
+  table.items td:first-child{grid-column:1/-1}
+  table.items td:last-child{grid-column:1/-1;text-align:right}
+  .total b{font-size:22px}
+  /* invoice */
+  .invoice .row.between{flex-direction:column;align-items:flex-start}
+  .invoice .right{text-align:left}
+  .invoice h2{font-size:20px}
+  details[open] .mini{flex-direction:column;align-items:stretch}
+  /* reports filter */
+  form.card.row{gap:8px} form.card.row .chip{padding:6px 11px}
+  label.inline{width:100%;justify-content:space-between} label.inline input{flex:1;margin-left:8px}
+  .sqlbox{min-height:130px;font-size:12.5px}
+  /* bottom tab bar */
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);align-items:end;position:fixed;left:10px;right:10px;bottom:10px;z-index:40;padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:650;color:var(--muted);text-decoration:none;padding:4px 0}
+  .tabbar a .ic{width:21px;height:21px}
+  .tabbar a.on{color:var(--gold3)} :root[data-theme="dark"] .tabbar a.on{color:var(--gold2)}
+  .tabbar .fab{width:52px;height:52px;margin:-26px auto 0;border-radius:18px;justify-content:center;color:#1b1407!important;background:linear-gradient(145deg,#f3d48f,#d6ad5f 50%,#b88a3e);box-shadow:0 10px 24px rgba(184,138,62,.45)}
+  .tabbar .fab .ic{width:24px;height:24px}
+  /* login */
+  .login-bg{display:block!important;min-height:100vh}
+  .login-side{padding:76px 20px 30px;place-items:start center}
+  .login{width:100%}
+  .login h1{font-size:26px}
+  .tools.fixed{top:14px;right:14px}
+}
+@media (max-width:380px){ .kpis{grid-template-columns:1fr 1fr} .kpi b{font-size:16px} .gwrap{grid-template-columns:1fr 1fr} }
+.inv-sum{display:none}
+@media (max-width:900px){
+  .invoice tfoot{display:none}
+  .inv-sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+  .inv-sum div{background:var(--bg);border:1px solid var(--line2);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+  .inv-sum span{font-size:11.5px;color:var(--muted);font-weight:600;display:flex;gap:6px;align-items:center}
+  .inv-sum b{font-size:17px;font-family:var(--display)}
+  .inv-sum .due{border-color:color-mix(in srgb,var(--gold) 40%,var(--line))}
+  .top h1{font-size:17px}
+  #langBtn{padding:7px 8px!important}
+}
