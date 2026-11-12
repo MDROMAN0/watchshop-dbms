@@ -1,18 +1,18 @@
 -- =====================================================================
 --  CSE311L Database Systems Lab — Database Implementation
---  Project : Watch Business Data Management System (WatchShop)
+--  Project : Watch Business Data Management System
 --  Group 08 · Section 3 · North South University
 --  Members : Md Roman (2312765042), Anika Nower Nihan (2011234642),
 --            Farhan Shahriar (2312071042), Ashiqur Rahman (2412388042)
 --
 --  How to run (XAMPP): start Apache + MySQL -> http://localhost/phpmyadmin
---  -> Import -> choose this file -> Go.  Creates database `watchshop`
+--  -> Import -> choose this file -> Go.  Creates database `watch_business_db`
 --  with 14 tables (PK, FK, UNIQUE, CHECK, NOT NULL), 5 triggers, 2 views
 --  and sample data in every table.  Matches our submitted ERD & Schema.
 -- =====================================================================
-DROP DATABASE IF EXISTS watchshop;
-CREATE DATABASE watchshop CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE watchshop;
+DROP DATABASE IF EXISTS watch_business_db;
+CREATE DATABASE watch_business_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE watch_business_db;
 
 -- ---------------------------- TABLES --------------------------------
 CREATE TABLE `user` (

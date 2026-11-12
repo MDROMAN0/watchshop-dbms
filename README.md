@@ -11,7 +11,7 @@ Data is saved in each visitor's browser (localStorage); use **Reset data** in th
 
 ## 🗄️ Database Implementation (CSE311L submission)
 
-**SQL file: [`database/watchshop.sql`](database/watchshop.sql)** — pure MySQL (schema + data), built from our approved ERD & Schema.
+**SQL file: [`database/Group08_Watch_Business_Data_Management_System.sql`](database/Group08_Watch_Business_Data_Management_System.sql)** — pure MySQL (schema + data), built from our approved ERD & Schema.
 
 | Item | Details |
 |---|---|
@@ -22,7 +22,7 @@ Data is saved in each visitor's browser (localStorage); use **Reset data** in th
 | Sample data | Meaningful rows in **all 14 tables** |
 | Extra | 5 triggers (stock, warranty, payment status, returns) and 2 views |
 
-**Run it:** XAMPP → start Apache + MySQL → `http://localhost/phpmyadmin` → **Import** → choose `database/watchshop.sql` → **Go**.
+**Run it:** XAMPP → start Apache + MySQL → `http://localhost/phpmyadmin` → **Import** → choose `database/Group08_Watch_Business_Data_Management_System.sql` → **Go**.
 
 ## Features
 - **Inventory** — watches with photos, brands, categories, live stock, low-stock alerts
