@@ -9,6 +9,21 @@ A real SQL database (SQLite compiled to WebAssembly via **sql.js**) runs inside 
 tables, primary/foreign keys, CHECK/UNIQUE constraints, **5 triggers** and **2 views** as our MySQL (XAMPP) version.
 Data is saved in each visitor's browser (localStorage); use **Reset data** in the sidebar to restore the sample data.
 
+## 🗄️ Database Implementation (CSE311L submission)
+
+**SQL file: [`database/watchshop.sql`](database/watchshop.sql)** — pure MySQL (schema + data), built from our approved ERD & Schema.
+
+| Item | Details |
+|---|---|
+| Tables | 14 — user, brand, category, watch, supplier, purchase_order, purchase_item, customer, sale, sale_item, payment, sale_return, warranty, repair |
+| Primary keys | Every table (`INT AUTO_INCREMENT PRIMARY KEY`) |
+| Foreign keys | 14 (`FOREIGN KEY ... REFERENCES`, with `ON DELETE CASCADE` on child rows) |
+| Other constraints | `NOT NULL`, `UNIQUE` (email, phone, brand, serial no, 1:1 warranty/return), `CHECK` (no negative price/stock/qty), `ENUM` (role, status, payment method), `DEFAULT` |
+| Sample data | Meaningful rows in **all 14 tables** |
+| Extra | 5 triggers (stock, warranty, payment status, returns) and 2 views |
+
+**Run it:** XAMPP → start Apache + MySQL → `http://localhost/phpmyadmin` → **Import** → choose `database/watchshop.sql` → **Go**.
+
 ## Features
 - **Inventory** — watches with photos, brands, categories, live stock, low-stock alerts
 - **Purchases** — purchase orders; marking *Received* adds stock (trigger)
