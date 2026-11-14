@@ -88,13 +88,47 @@ const ICONS = {
   out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   print: '<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  save: '<path d="M5 3h11l5 5v13H3V5a2 2 0 0 1 2-2z"/><path d="M7 3v6h8V3M7 21v-7h10v7"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+  play: '<path d="M7 4.5v15l12-7.5z"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h10"/>',
+  shield: '<path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   db: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
   reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'
 };
 const icon = n => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[n] || ''}</svg>`;
 
+/* smooth area chart (inline SVG, no library) */
+function areaChart(labels, values, tips) {
+  const n = values.length, W = 560, H = 220, l = 8, r = 8, t = 26, b = 26, max = Math.max(1, ...values), f = x => Math.round(x * 10) / 10;
+  const pts = values.map((v, i) => [f(l + (W - l - r) * i / Math.max(1, n - 1)), f(t + (H - t - b) * (1 - v / max))]);
+  let d = `M${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 1; i < n; i++) { const mx = f((pts[i - 1][0] + pts[i][0]) / 2); d += ` C${mx} ${pts[i - 1][1]} ${mx} ${pts[i][1]} ${pts[i][0]} ${pts[i][1]}`; }
+  const base = H - b, pk = values.indexOf(Math.max(...values));
+  let s = `<svg class="area" viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--gold);stop-opacity:.32"/><stop offset="1" style="stop-color:var(--gold);stop-opacity:0"/></linearGradient></defs>`;
+  [0, .5, 1].forEach(g => { const y = t + (H - t - b) * g; s += `<line class="gl" x1="${l}" x2="${W - r}" y1="${y}" y2="${y}"/>`; });
+  s += `<path class="fl" fill="url(#ag)" d="${d} L${pts[n - 1][0]} ${base} L${pts[0][0]} ${base} Z"/><path class="ln" pathLength="1" d="${d}"/>`;
+  pts.forEach((p, i) => { s += `<circle${values[i] ? '' : ' class="z"'} cx="${p[0]}" cy="${p[1]}" r="${values[i] ? 3.5 : 2}"><title>${e(tips[i])}</title></circle>`;
+    if (i % 2 === (n - 1) % 2) s += `<text x="${p[0]}" y="${H - 6}" text-anchor="middle">${e(labels[i])}</text>`; });
+  if (values[pk] > 0) { const p = pts[pk]; s += `<text class="pk" x="${p[0]}" y="${p[1] - 10}" text-anchor="${pk < 2 ? 'start' : pk > n - 3 ? 'end' : 'middle'}">${tk(values[pk])}</text>`; }
+  return s + '</svg>';
+}
+function setClocks() {
+  const n = new Date(), sec = n.getHours() % 12 * 3600 + n.getMinutes() * 60 + n.getSeconds();
+  document.querySelectorAll('.clock').forEach(c => { c.querySelector('.h').style.animationDelay = -sec + 's';
+    c.querySelector('.m').style.animationDelay = -(sec % 3600) + 's'; c.querySelector('.s').style.animationDelay = -(sec % 60) + 's'; });
+}
+
 /* ---------------- theme & language ---------------- */
-function applyTheme(t) { document.documentElement.dataset.theme = t; document.querySelectorAll('#themeBtn').forEach(b => b.textContent = t === 'dark' ? '☀️' : '🌙'); }
+function applyTheme(t) { document.documentElement.dataset.theme = t; document.querySelectorAll('#themeBtn').forEach(b => b.innerHTML = icon(t === 'dark' ? 'sun' : 'moon')); }
 function applyLang() {
   const l = store.get('lang') || 'en';
   document.documentElement.lang = l;
@@ -125,8 +159,8 @@ function page(title, html) {
   </nav><div class="demo-note">${icon('db')}<div><b>${L('Live SQL demo', 'লাইভ SQL ডেমো')}</b>${L('Data is saved in your browser.', 'ডেটা আপনার ব্রাউজারে সেভ থাকে।')}
   <button class="btn sm ghost" data-act="reset">${icon('reset')} ${L('Reset data', 'ডেটা রিসেট')}</button></div></div></aside>
   <div class="scrim" data-act="menu"></div>
-  <main><header class="top"><button class="btn ghost icon-btn menu-btn" data-act="menu" aria-label="Menu">${icon('grid')}</button><div class="ttl"><div class="crumb">WatchShop / ${e(plain)}</div><h1>${title}</h1></div><div class="tools">
-  <button class="btn ghost" id="langBtn">বাংলা</button><button class="btn ghost icon-btn" id="themeBtn">🌙</button>
+  <main><header class="top"><button class="btn ghost icon-btn menu-btn" data-act="menu" aria-label="Menu">${icon('menu')}</button><div class="ttl"><div class="crumb">WatchShop / ${e(plain)}</div><h1>${title}</h1></div><div class="tools">
+  <button class="btn ghost" id="langBtn">বাংলা</button><button class="btn ghost icon-btn" id="themeBtn" aria-label="Theme">${icon('moon')}</button>
   <div class="who"><span class="avatar">${e(u.full_name[0])}</span><div>${e(u.full_name)}<small>${e(u.role)}</small></div></div>
   <a class="btn ghost icon-btn" href="#/logout" title="Logout">${icon('out')}</a></div></header>
   <div class="content">${flashMsg ? `<div class="flash ${flashMsg[1]}">${e(flashMsg[0])}</div>` : ''}${html}</div>
@@ -139,26 +173,26 @@ function page(title, html) {
   </nav></main>`;
   document.body.classList.remove('nav-open');
   flashMsg = null;
-  applyTheme(document.documentElement.dataset.theme); applyLang(); window.scrollTo(0, 0);
+  applyTheme(document.documentElement.dataset.theme); applyLang(); setClocks(); window.scrollTo(0, 0);
 }
 
 /* ======================= PAGES ======================= */
 function loginPage(err) {
   document.title = 'Login · WatchShop';
   document.getElementById('app').innerHTML = `<div class="login-bg">
-  <section class="login-art"><div class="logo"><span class="mark">${icon('watch')}</span><div><b>Watch</b>Shop<small>Business Manager</small></div></div><div class="dial"></div>
+  <section class="login-art"><div class="logo"><span class="mark">${icon('watch')}</span><div><b>Watch</b>Shop<small>Business Manager</small></div></div><div class="clock big"><i class="h"></i><i class="m"></i><i class="s"></i></div>
   <div><h2>${L('Every second of your', 'আপনার ঘড়ির ব্যবসার')} <em>${L('watch business,', 'প্রতিটি মুহূর্ত,')}</em> ${L('in one place.', 'এক জায়গায়।')}</h2>
   <p>${L('Inventory, sales, warranty, repairs and analytics, powered by a real SQL database running right in your browser.', 'ইনভেন্টরি, বিক্রয়, ওয়ারেন্টি, মেরামত ও অ্যানালিটিক্স — আসল SQL ডেটাবেস, সরাসরি আপনার ব্রাউজারে।')}</p></div>
   <div class="feats"><span>${icon('box')} Inventory</span><span>${icon('sale')} Sales</span><span>${icon('tool')} Warranty</span><span>${icon('chart')} Analytics</span></div></section>
-  <section class="login-side"><div class="tools fixed"><button class="btn ghost" id="langBtn">বাংলা</button><button class="btn ghost icon-btn" id="themeBtn">🌙</button></div>
+  <section class="login-side"><div class="tools fixed"><button class="btn ghost" id="langBtn">বাংলা</button><button class="btn ghost icon-btn" id="themeBtn" aria-label="Theme">${icon('moon')}</button></div>
   <form class="login" data-act="login"><h1>${L('Welcome back', 'স্বাগতম')}</h1><p class="sub">${L('Sign in to manage your store.', 'আপনার স্টোর ম্যানেজ করতে লগইন করুন।')}</p>
-  ${err ? `<div class="flash err">${e(err)}</div><br>` : ''}
+  ${err ? `<div class="flash err">${e(err)}</div>` : ''}
   <label>${L('Email', 'ইমেইল')}<input name="email" type="email" required value="admin@watchshop.com"></label>
   <label>${L('Password', 'পাসওয়ার্ড')}<input name="password" type="password" required value="admin123"></label>
-  <button class="btn primary full">${L('Sign in', 'লগইন')} →</button>
+  <button class="btn primary full">${L('Sign in', 'লগইন')} ${icon('arrow')}</button>
   <div class="hint"><b>Demo accounts</b><br>Admin — admin@watchshop.com / admin123<br>Salesperson — sales@watchshop.com / sales123</div>
   <p class="small muted" style="margin-top:14px">CSE311L · Group 08 · North South University</p></form></section></div>`;
-  applyTheme(document.documentElement.dataset.theme); applyLang();
+  applyTheme(document.documentElement.dataset.theme); applyLang(); setClocks();
 }
 
 function dashboard() {
@@ -167,31 +201,34 @@ function dashboard() {
    (SELECT COALESCE(SUM(total_amount),0) FROM sale WHERE strftime('%Y-%m',sale_date)=strftime('%Y-%m','now','localtime')) month,
    (SELECT COALESCE(SUM(stock_qty*purchase_price),0) FROM watch) stock_value, (SELECT COALESCE(SUM(stock_qty),0) FROM watch) units,
    (SELECT COALESCE(SUM(due),0) FROM v_sale_summary) dues, (SELECT COUNT(*) FROM v_low_stock) low,
-   (SELECT COUNT(*) FROM repair WHERE status<>'Delivered') repairs, (SELECT COUNT(*) FROM customer) customers`);
+   (SELECT COUNT(*) FROM repair WHERE status<>'Delivered') repairs, (SELECT COUNT(*) FROM customer) customers,
+   (SELECT COUNT(*) FROM warranty WHERE status='Active' AND end_date >= date('now','localtime')) warranties,
+   (SELECT COUNT(*) FROM sale WHERE strftime('%Y-%m',sale_date)=strftime('%Y-%m','now','localtime')) month_n`);
   const map = Object.fromEntries(rows(`SELECT date(sale_date) d, SUM(total_amount) t FROM sale WHERE date(sale_date) >= date('now','localtime','-13 day') GROUP BY d`).map(r => [r.d, r.t]));
   const mx = Math.max(1, ...Object.values(map));
   const days = [...Array(14)].map((_, i) => val(`SELECT date('now','localtime','-${13 - i} day')`));
   const hr = new Date().getHours(), greet = hr < 12 ? ['Good morning', 'শুভ সকাল'] : hr < 17 ? ['Good afternoon', 'শুভ অপরাহ্ন'] : ['Good evening', 'শুভ সন্ধ্যা'];
-  const cards = [['Today\'s Sales', 'আজকের বিক্রয়', tk(k.today), 'money'], ['This Month', 'এই মাসে', tk(k.month), 'cal'], ['Stock Value', 'স্টকের মূল্য', tk(k.stock_value), 'box', k.units + ' units'],
-    ['Outstanding Dues', 'বকেয়া', tk(k.dues), 'alert'], ['Low Stock Items', 'কম স্টক', k.low, 'down'], ['Pending Repairs', 'চলমান মেরামত', k.repairs, 'tool'], ['Customers', 'কাস্টমার', k.customers, 'users']];
+  const cards = [['Today\'s Sales', 'আজকের বিক্রয়', tk(k.today), 'money'], ['This Month', 'এই মাসে', tk(k.month), 'cal', k.month_n + ' sales'], ['Stock Value', 'স্টকের মূল্য', tk(k.stock_value), 'box', k.units + ' units'],
+    ['Outstanding Dues', 'বকেয়া', tk(k.dues), 'alert'], ['Low Stock Items', 'কম স্টক', k.low, 'down'], ['Pending Repairs', 'চলমান মেরামত', k.repairs, 'tool'], ['Active Warranties', 'সক্রিয় ওয়ারেন্টি', k.warranties, 'shield'], ['Customers', 'কাস্টমার', k.customers, 'users']];
   const best = rows(`SELECT w.image, w.model_name, b.brand_name, w.sale_price, COALESCE(SUM(si.quantity),0) sold FROM watch w JOIN brand b USING(brand_id)
     LEFT JOIN sale_item si ON si.watch_id = w.watch_id GROUP BY w.watch_id ORDER BY sold DESC, w.sale_price DESC LIMIT 5`);
   const low = rows('SELECT * FROM v_low_stock ORDER BY stock_qty');
   const first = me().full_name.split(' ')[1] || me().full_name;
   page(L('Dashboard', 'ড্যাশবোর্ড'), `
-  <section class="hero"><div style="position:relative;z-index:1"><small>${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</small>
-    <h2>${L(greet[0], greet[1])}, ${e(first)}</h2><p>${L('Here is how your watch store is doing today.', 'আজ আপনার ঘড়ির দোকানের অবস্থা।')}</p></div>
-    <div class="stat"><small>${L('This month', 'এই মাসে')}</small><b>${tk(k.month)}</b><a class="btn primary" href="#/sales/new">${icon('plus')} ${L('New Sale', 'নতুন বিক্রয়')}</a></div></section>
+  <section class="hero"><div><small>${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</small>
+    <h2>${L(greet[0], greet[1])}, <em>${e(first)}</em></h2><p>${L('Here is how your watch store is doing today.', 'আজ আপনার ঘড়ির দোকানের অবস্থা।')}</p>
+    <div class="row"><a class="btn gold" href="#/sales/new">${icon('plus')} ${L('New Sale', 'নতুন বিক্রয়')}</a><a class="btn glass" href="#/reports">${icon('chart')} ${L('View reports', 'রিপোর্ট দেখুন')}</a></div></div>
+    <div class="hero-side"><div class="stat"><small>${L('This month', 'এই মাসে')}</small><b>${tk(k.month)}</b><span>${k.month_n} ${L('sales', 'টি বিক্রয়')} · ${L('today', 'আজ')} ${tk(k.today)}</span></div><div class="clock"><i class="h"></i><i class="m"></i><i class="s"></i></div></div></section>
   <div class="kpis">${cards.map(c => `<div class="kpi"><i class="k-${c[3]}">${icon(c[3])}</i><div><small>${L(c[0], c[1])}</small><b>${c[2]}</b>${c[4] ? `<small class="muted">${c[4]}</small>` : ''}</div></div>`).join('')}</div>
-  <div class="card"><div class="row between"><h3>${L('Best Sellers', 'সেরা বিক্রিত ঘড়ি')}</h3><a class="btn ghost sm" href="#/crud/watch">${L('View all watches', 'সব ঘড়ি দেখুন')} →</a></div><div class="strip">
+  <div class="card"><div class="row between"><h3>${L('Best Sellers', 'সেরা বিক্রিত ঘড়ি')}</h3><a class="btn ghost sm" href="#/crud/watch">${L('View all watches', 'সব ঘড়ি দেখুন')} ${icon('arrow')}</a></div><div class="strip">
   ${best.map((w, i) => `<div class="mini-card"><span class="rank">#${i + 1}</span><img src="${e(w.image || PH)}" alt=""><small>${e(w.brand_name)}</small><b>${e(w.model_name)}</b>
     <div class="row between"><span>${tk(w.sale_price)}</span><span class="badge g">${w.sold} ${L('sold', 'বিক্রি')}</span></div></div>`).join('')}</div></div>
-  <div class="grid2"><div class="card"><h3>${L('Sales — last 14 days', 'বিক্রয় — গত ১৪ দিন')}</h3><div class="bars">
-  ${days.map(d => `<div class="bar" data-v="${fmtD(d)} · ${tk(map[d] || 0)}"><span style="height:${Math.round((map[d] || 0) / mx * 100)}%"></span><em>${d.slice(8)}</em></div>`).join('')}</div></div>
+  <div class="grid2"><div class="card"><div class="row between"><h3>${L('Sales — last 14 days', 'বিক্রয় — গত ১৪ দিন')}</h3><span class="muted small">${L('Total', 'মোট')} <b>${tk(Object.values(map).reduce((a, b) => a + b, 0))}</b></span></div>
+  ${areaChart(days.map(d => d.slice(8)), days.map(d => map[d] || 0), days.map(d => fmtD(d) + ' · ' + tk(map[d] || 0)))}</div>
   <div class="card"><h3>${L('Low Stock Alert', 'কম স্টক সতর্কতা')}</h3><table><thead><tr><th>Watch</th><th>Stock</th><th>Reorder at</th></tr></thead><tbody>
   ${low.map(w => `<tr class="warn"><td><div class="prod">${thumb(w.image)}${e(w.brand_name + ' ' + w.model_name)}</div></td><td>${w.stock_qty}</td><td>${w.reorder_level}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">All stock OK ✓</td></tr>'}
-  </tbody></table>${isAdmin() ? `<a class="btn ghost sm mt" href="#/purchases">+ ${L('Create purchase order', 'ক্রয় অর্ডার তৈরি')}</a>` : ''}</div></div>
-  <div class="card"><div class="row between"><h3>${L('Recent Sales', 'সাম্প্রতিক বিক্রয়')}</h3><a class="btn primary" href="#/sales/new">+ ${L('New Sale', 'নতুন বিক্রয়')}</a></div>
+  </tbody></table>${isAdmin() ? `<a class="btn ghost sm mt" href="#/purchases">${icon('plus')} ${L('Create purchase order', 'ক্রয় অর্ডার তৈরি')}</a>` : ''}</div></div>
+  <div class="card"><div class="row between"><h3>${L('Recent Sales', 'সাম্প্রতিক বিক্রয়')}</h3><a class="btn primary" href="#/sales/new">${icon('plus')} ${L('New Sale', 'নতুন বিক্রয়')}</a></div>
   <table><thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Total</th><th>Due</th><th>Status</th></tr></thead><tbody>
   ${rows('SELECT * FROM v_sale_summary ORDER BY sale_date DESC LIMIT 6').map(s => `<tr class="click" data-href="#/sale/${s.sale_id}"><td>${s.sale_id}</td><td>${fmtD(s.sale_date)}</td><td>${e(s.customer_name)}</td><td>${tk(s.total_amount)}</td><td>${tk(s.due)}</td><td>${badge(s.payment_status)}</td></tr>`).join('')}
   </tbody></table></div>`);
@@ -239,11 +276,11 @@ function crudPage(t, editId) {
     body = `<div class="gallery" id="tbl"><div class="gwrap">${list.map(r => { const lowS = r.stock_qty <= r.reorder_level, mg = r.sale_price > 0 ? Math.round((r.sale_price - r.purchase_price) / r.sale_price * 100) : 0;
       return `<article class="pcard"><div class="pimg"><img src="${e(r.image || PH)}" alt="" loading="lazy"><span class="badge ${lowS ? 'r' : 'g'} pstock">${r.stock_qty} ${L('in stock', 'স্টকে')}</span><span class="pcat">${e(r.category_name)}</span></div>
       <div class="pbody"><small>${e(r.brand_name)}</small><h4>${e(r.model_name)}</h4><div class="pprice"><b>${tk(r.sale_price)}</b><span class="muted small">${L('cost', 'ক্রয়')} ${tk(r.purchase_price)} · ${mg}% ${L('margin', 'মার্জিন')}</span></div>
-      <div class="pmeta"><span>${icon('tool')} ${r.warranty_months} ${L('mo warranty', 'মাস ওয়ারেন্টি')}</span>${canEdit ? `<span class="actions"><a class="btn sm" href="#/crud/watch/${r.watch_id}">✎</a>${isAdmin() ? `<button class="btn sm danger" data-act="del" data-t="watch" data-id="${r.watch_id}">✕</button>` : ''}</span>` : ''}</div></div></article>`; }).join('')}</div></div>`;
+      <div class="pmeta"><span>${icon('tool')} ${r.warranty_months} ${L('mo warranty', 'মাস ওয়ারেন্টি')}</span>${canEdit ? `<span class="actions"><a class="btn sm" href="#/crud/watch/${r.watch_id}" title="Edit">${icon('edit')}</a>${isAdmin() ? `<button class="btn sm danger" data-act="del" data-t="watch" data-id="${r.watch_id}" title="Delete">${icon('trash')}</button>` : ''}</span>` : ''}</div></div></article>`; }).join('')}</div></div>`;
   } else {
     const cols = list.length ? Object.keys(list[0]) : [];
     body = `<div class="tablewrap"><table id="tbl"><thead><tr>${cols.map(c => `<th>${e(c.replace(/_/g, ' ').replace(/\b\w/g, x => x.toUpperCase()))}</th>`).join('')}${canEdit ? '<th></th>' : ''}</tr></thead><tbody>
-    ${list.map(r => `<tr>${cols.map(c => `<td>${/price|spent/.test(c) ? tk(r[c]) : e(r[c])}</td>`).join('')}${canEdit ? `<td class="actions"><a class="btn sm" href="#/crud/${t}/${r[pk]}">✎</a>${isAdmin() ? `<button class="btn sm danger" data-act="del" data-t="${t}" data-id="${r[pk]}">✕</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+    ${list.map(r => `<tr>${cols.map(c => `<td>${/price|spent/.test(c) ? tk(r[c]) : e(r[c])}</td>`).join('')}${canEdit ? `<td class="actions"><a class="btn sm" href="#/crud/${t}/${r[pk]}" title="Edit">${icon('edit')}</a>${isAdmin() ? `<button class="btn sm danger" data-act="del" data-t="${t}" data-id="${r[pk]}" title="Delete">${icon('trash')}</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
   }
   page(L(en, bn), `<div class="grid2">${form}<div class="card ${canEdit ? '' : 'span2'}"><div class="row between"><h3>${L('All ' + en, 'সব ' + bn)} <small class="muted">(${list.length})</small></h3>
   <input class="search" data-search="#tbl" placeholder="Search..."></div>${body}</div></div>`);
@@ -291,7 +328,7 @@ function newSalePage() {
   <table class="items"><thead><tr><th>${L('Watch', 'ঘড়ি')}</th><th>${L('Serial No', 'সিরিয়াল নং')}</th><th>${L('Qty', 'পরিমাণ')}</th><th>${L('Unit Price', 'দাম')}</th><th></th></tr></thead>
   <tbody id="rows"><tr><td><select name="watch_id" data-autoprice required>${wopt}</select></td><td><input name="serial" required placeholder="e.g. CAS-GA21-0010"></td>
   <td><input class="qty" name="qty" type="number" min="1" value="1" data-def="1"></td><td><input class="price" name="price" type="number" step="any" min="0" required></td>
-  <td><button type="button" class="btn sm danger del-row">✕</button></td></tr></tbody></table>
+  <td><button type="button" class="btn sm danger del-row" title="Remove">${icon('x')}</button></td></tr></tbody></table>
   <button type="button" class="btn ghost" data-add-row="#rows">+ ${L('Add item', 'আইটেম যোগ')}</button>
   <div class="grid3 mt"><label>${L('Discount', 'ডিসকাউন্ট')}<input name="discount" type="number" step="any" min="0" value="0"></label>
   <label>${L('Paid now', 'এখন পরিশোধ')}<input name="paid" type="number" step="any" min="0" value="0"></label>
@@ -343,12 +380,12 @@ function purchasesPage(view) {
   page(L('Purchase Orders', 'ক্রয় অর্ডার'), `<div class="grid2">${isAdmin() ? `<form class="card form" data-act="po" data-calc><h3>${L('New Purchase Order', 'নতুন ক্রয় অর্ডার')}</h3>
   <label>${L('Supplier', 'সাপ্লায়ার')}<select name="supplier_id" required>${opts('SELECT supplier_id, supplier_name FROM supplier ORDER BY supplier_name')}</select></label>
   <table class="items"><thead><tr><th>Watch</th><th>Qty</th><th>Unit Cost</th><th></th></tr></thead><tbody id="rows"><tr><td><select name="watch_id" data-autoprice required>${wopt}</select></td>
-  <td><input class="qty" name="qty" type="number" min="1" value="1" data-def="1"></td><td><input class="price" name="price" type="number" step="any" min="0" required></td><td><button type="button" class="btn sm danger del-row">✕</button></td></tr></tbody></table>
+  <td><input class="qty" name="qty" type="number" min="1" value="1" data-def="1"></td><td><input class="price" name="price" type="number" step="any" min="0" required></td><td><button type="button" class="btn sm danger del-row" title="Remove">${icon('x')}</button></td></tr></tbody></table>
   <button type="button" class="btn ghost" data-add-row="#rows">+ ${L('Add item', 'আইটেম যোগ')}</button>
   <div class="row between mt"><div class="total">${L('Total', 'মোট')}: <b id="total">৳ 0</b></div><button class="btn primary">${L('Create Order', 'অর্ডার তৈরি')}</button></div></form>` : ''}
   <div class="card ${isAdmin() ? '' : 'span2'}"><h3>${L('All Purchase Orders', 'সব ক্রয় অর্ডার')}</h3><div class="tablewrap"><table><thead><tr><th>#</th><th>Date</th><th>Supplier</th><th>Units</th><th>Total Cost</th><th>Status</th><th></th></tr></thead><tbody>
   ${pos.map(p => `<tr><td>${p.po_id}</td><td>${fmtD(p.order_date)}</td><td>${e(p.supplier_name)}</td><td>${p.units}</td><td>${tk(p.total_cost)}</td><td>${badge(p.status)}</td>
-   <td class="actions"><a class="btn sm" href="#/purchases/${p.po_id}">👁</a>${isAdmin() && p.status === 'Pending' ? `<button class="btn sm primary" data-act="postatus" data-id="${p.po_id}" data-s="Received" title="Mark received">✓</button><button class="btn sm danger" data-act="postatus" data-id="${p.po_id}" data-s="Cancelled" title="Cancel">✕</button>` : ''}</td></tr>
+   <td class="actions"><a class="btn sm" href="#/purchases/${p.po_id}" title="View">${icon('eye')}</a>${isAdmin() && p.status === 'Pending' ? `<button class="btn sm primary" data-act="postatus" data-id="${p.po_id}" data-s="Received" title="Mark received">${icon('check')}</button><button class="btn sm danger" data-act="postatus" data-id="${p.po_id}" data-s="Cancelled" title="Cancel">${icon('x')}</button>` : ''}</td></tr>
    ${view == p.po_id ? `<tr class="sub"><td colspan="7">${rows("SELECT b.brand_name || ' ' || w.model_name n, pi.quantity, pi.unit_cost FROM purchase_item pi JOIN watch w USING(watch_id) JOIN brand b USING(brand_id) WHERE po_id=?", [p.po_id]).map(i => `${e(i.n)} × ${i.quantity} @ ${tk(i.unit_cost)}`).join('<br>')}<br><span class="muted small">Created by ${e(p.full_name)}</span></td></tr>` : ''}`).join('')}
   </tbody></table></div></div></div>`);
 }
@@ -376,9 +413,9 @@ function warrantyPage(find = '', exp = false) {
   page(L('Warranty & Repair', 'ওয়ারেন্টি ও মেরামত'), `<div class="card"><h3>${L('Repair Requests', 'মেরামতের অনুরোধ')}</h3><div class="tablewrap"><table><thead><tr><th>#</th><th>Received</th><th>Customer</th><th>Watch / Serial</th><th>Issue</th><th>Status · Cost</th><th>Delivered</th></tr></thead><tbody>
   ${reps.map(r => `<tr><td>${r.repair_id}</td><td>${fmtD(r.received_date)}</td><td>${e(r.customer_name)}</td><td><div class="prod">${thumb(r.image)}<div>${e(r.watch)}<br><small class="muted">${e(r.serial_no)}</small></div></div></td><td>${e(r.issue)}</td>
    <td><form class="mini" data-act="repupd"><input type="hidden" name="repair_id" value="${r.repair_id}"><select name="status">${['Received', 'In Repair', 'Ready', 'Delivered'].map(o => `<option${o === r.status ? ' selected' : ''}>${o}</option>`).join('')}</select>
-   <input name="cost" type="number" step="any" min="0" value="${r.repair_cost}" style="width:90px"><button class="btn sm">💾</button></form></td><td>${r.delivered_date ? fmtD(r.delivered_date) : badge(r.status)}</td></tr>`).join('')}</tbody></table></div></div>
+   <input name="cost" type="number" step="any" min="0" value="${r.repair_cost}" style="width:90px"><button class="btn sm" title="Save">${icon('save')}</button></form></td><td>${r.delivered_date ? fmtD(r.delivered_date) : badge(r.status)}</td></tr>`).join('')}</tbody></table></div></div>
   <div class="card"><form class="row between" data-act="wfind"><h3>${L('Warranties', 'ওয়ারেন্টি')}</h3><div class="row"><input class="search" name="find" value="${e(find)}" placeholder="Serial / customer / phone">
-  <label class="chk"><input type="checkbox" name="exp" ${exp ? 'checked' : ''}> ${L('Expiring in 90 days', '৯০ দিনে মেয়াদ শেষ')}</label><button class="btn ghost">🔍</button></div></form>
+  <label class="chk"><input type="checkbox" name="exp" ${exp ? 'checked' : ''}> ${L('Expiring in 90 days', '৯০ দিনে মেয়াদ শেষ')}</label><button class="btn ghost" title="Search">${icon('search')}</button></div></form>
   <div class="tablewrap"><table><thead><tr><th>#</th><th>Customer</th><th>Watch / Serial</th><th>Start</th><th>End</th><th>Status</th><th>${L('New Repair', 'নতুন মেরামত')}</th></tr></thead><tbody>
   ${war.map(x => `<tr><td>${x.warranty_id}</td><td>${e(x.customer_name)}<br><small class="muted">${e(x.phone)}</small></td><td><div class="prod">${thumb(x.image)}<div>${e(x.watch)}<br><small class="muted">${e(x.serial_no)}</small></div></div></td>
    <td>${fmtD(x.start_date)}</td><td>${fmtD(x.end_date)}</td><td>${badge(x.state)}</td><td>${x.state !== 'Void' ? `<details><summary class="btn sm">+ ${L('Repair', 'মেরামত')}</summary>
@@ -462,7 +499,7 @@ function sqlPage(q) {
   page(L('SQL Console', 'SQL কনসোল'), `<div class="card"><div class="row between"><h3>${icon('db')} ${L('Run SQL on the live database', 'লাইভ ডেটাবেসে SQL চালান')}</h3>
   <div class="row">${SAMPLES.map((s, i) => `<button class="chip" data-act="sample" data-i="${i}">${e(s[0])}</button>`).join('')}</div></div>
   <form data-act="sql"><textarea name="q" class="sqlbox" spellcheck="false">${e(q)}</textarea><div class="row between mt"><span class="muted small">${L('Engine: SQLite (WebAssembly) — same tables, keys, triggers and views as the MySQL version.', 'ইঞ্জিন: SQLite (WebAssembly) — MySQL ভার্সনের মতোই টেবিল, কি, ট্রিগার ও ভিউ।')}</span>
-  <button class="btn primary">▶ ${L('Run', 'চালান')}</button></div></form></div><div class="card">${out}</div>`);
+  <button class="btn primary">${icon('play')} ${L('Run', 'চালান')}</button></div></form></div><div class="card">${out}</div>`);
 }
 
 /* ======================= ROUTER ======================= */
@@ -534,7 +571,7 @@ document.addEventListener('click', async ev => {
 document.addEventListener('click', ev => {
   const add = ev.target.closest('[data-add-row]');
   if (add) { const tb = document.querySelector(add.dataset.addRow), r = tb.rows[0].cloneNode(true); r.querySelectorAll('input').forEach(i => i.value = i.dataset.def || ''); r.querySelector('select').value = ''; tb.appendChild(r); calc(); }
-  if (ev.target.matches('.del-row')) { const tb = ev.target.closest('tbody'); if (tb.rows.length > 1) ev.target.closest('tr').remove(); calc(); }
+  if (ev.target.closest('.del-row')) { const tb = ev.target.closest('tbody'); if (tb.rows.length > 1) ev.target.closest('tr').remove(); calc(); }
 });
 function calc() {
   const f = document.querySelector('form[data-calc]'); if (!f) return; let sum = 0;
